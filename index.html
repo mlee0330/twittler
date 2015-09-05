@@ -3,25 +3,91 @@
   <head>
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+    <style>
+      body {
+        background-color: #35B4B6;
+        margin: 0 auto;
+        color: #000000;
+        font-family: arial;
+      }
+      h1 {
+        text-align: center;
+      }
+      #wrap {
+        margin: 0 auto;
+      }
+      .tweet {
+        background: white;
+        margin: 10px auto;
+        padding: 10px;
+        border: 2px solid black;
+        width: 400px;
+      }
+    </style>
   </head>
   <body>
+    <div id="wrap">
+      <button class="toggler" id="start" style="display: none">Start Updates</button>
+      <button class="toggler" id="stop">Stop Updates</button>
+      <button id="back" style="display: none">Return to Stream</button>
+      <h1>Welcome to Twittler!</h1>
+    </div>
+    <div id="stream">
+    </div>
     <script>
+      var $body = $('#stream');
+      var index = 0;  
+      var autoUpdate;
 
-      $(document).ready(function(){
-        var $body = $('body');
-        $body.html('');
+      var updateStream = function() {
+        while(index < streams.home.length){
+        var tweet = streams.home[index];
+        var $tweet = $('<div class="tweet ' + tweet.user + '"></div>');
+        $tweet.html('<a href="#" id="userclick" class="' + tweet.user + '" name="userclick">@' + tweet.user + '</a>:<br>' + tweet.message + '<br>' + tweet.created_at);
 
-        var index = streams.home.length - 1;
-        while(index >= 0){
-          var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
-          index -= 1;
-        }
+        $('#userclick').on('click', function() {
+          var user;
+          clearInterval(autoUpdate);
+          for(var i = 0; i < users.length; i++) {
+            if($(this).hasClass(users[i])) {
+              user = users[i];
+            }
+          }
+          $('.tweet').hide();
+          $('.toggler').hide();
+          $('.' + user).show();
+          $('#back').show();
+          $('#back').on('click', function() {
+            clearInterval(autoUpdate);
+            $('.tweet').show();
+            $('#back').hide();
+            $('#stop').show();
+            autoUpdate = setInterval(updateStream, 2000);
+          });
+        });
 
+        $tweet.prependTo($body);
+        index += 1;
+        };
+        $tweet.hide();
+      };
+
+      autoUpdate = setInterval(updateStream, 2000);
+
+      $('#stop').click(function() {
+        clearInterval(autoUpdate);
+        $('#stop').hide();
+        $('#start').show();
+      }); 
+
+      $('#start').click(function() {
+        autoUpdate = setInterval(updateStream, 2000);
+        $('#start').hide();
+        $('#stop').show();
+      })
+      $(document).ready(function() {
+        updateStream();
       });
-
     </script>
   </body>
 </html>
